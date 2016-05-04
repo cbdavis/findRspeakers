@@ -1,14 +1,11 @@
 options(stringsAsFactors = FALSE)
 
 get_cran_database <- function(){
-  contrib.url(getOption("repos")["CRAN"], "source") # trigger chooseCRANmirror() if required
-  description <- sprintf("%s/web/packages/packages.rds",
-                         getOption("repos")["CRAN"])
+  description = "http://cran.r-project.org/web/packages/packages.rds"
   con <- url(description, "rb")
   on.exit(close(con))
   db <- readRDS(gzcon(con))
   rownames(db) <- NULL
-  
   db = as.data.frame(db)
   return(db)
 }

@@ -1,4 +1,4 @@
-Package: findRspeaker
+Package: findRspeakers
 Type: Package
 Title: Find potential R speakers nearby
 Version: 0.1.0
@@ -8,3 +8,7 @@ Description: Find people nearby who can give presentations about their interesti
 License: What license is it under?
 LazyData: TRUE
 Imports: XML, RCurl
+Suggests: knitr,
+    rmarkdown, 
+    pander
+VignetteBuilder: knitr

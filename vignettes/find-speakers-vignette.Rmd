@@ -1,0 +1,18 @@
+---
+title: "Using the findRspeakers package"
+author: "Chris Davis"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using the findRspeakers package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Find all e-mail addresses on CRAN which contain "rug.nl"
+```{r}
+library(findRspeakers)
+library(pander)
+possibleSpeakers = findRspeakers("rug\\.nl")
+pander(possibleSpeakers, split.table=Inf)
+```
