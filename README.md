@@ -1,5 +1,5 @@
 # findRspeakers
-Find people nearby who can give presentations about their interesting work with R
+Find people nearby who can give presentations about their interesting work with R.  Currently this only tries to match patterns in the e-mail addresses of package authors and maintainers.
 
 ## Installation
 ```
@@ -8,7 +8,7 @@ install_github("cbdavis/findRspeakers")
 ```
 
 ## Example use
-Find all speakers with e-mail addresses containing rug.nl
+Find all speakers with e-mail addresses containing rug.nl.  Information on the packages is returned as a data frame, below `pander` is used to format the dataframe into an html table.
 ```
 library(findRspeakers)
 library(pander)
