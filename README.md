@@ -1,5 +1,11 @@
 # findRspeakers
-Find people nearby who can give presentations about their interesting work with R.  Currently this only tries to match patterns in the e-mail addresses of package authors and maintainers.
+
+## What?
+Let's say that you run something like an [R Meetup Group](http://www.meetup.com/topics/r-project-for-statistical-computing/) or other organization where you have people give presentations about their awesome work using R.  How do you manage to find new interesting speakers?  
+
+The obvious answer is to **use R to find people to talk about R**.  This R package scans through all the metadata on CRAN packages to find potential speakers in your area.
+
+Currently this only tries to match patterns in the e-mail addresses of package authors and maintainers.
 
 ## Installation
 ```
