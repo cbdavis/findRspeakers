@@ -24,6 +24,8 @@ Find all speakers with e-mail addresses in the Netherlands or Germany, within th
 
 `data_file` stores the results of geolocating e-mail domains.  When you run the code the first time, it may take 20-30 minutes to generate this file due to API request limits for the geolocation service being used.
 
+`emailPattern` is a regular expression that is used to search by e-mail domain.  Currently this won't filter by user name.
+
 ```
 library(findRspeakers)
 library(pander)
