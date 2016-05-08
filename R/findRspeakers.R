@@ -1,20 +1,8 @@
 options(stringsAsFactors = FALSE)
 
-get_cran_database <- function(){
-  description = "http://cran.r-project.org/web/packages/packages.rds"
-  con <- url(description, "rb")
-  on.exit(close(con))
-  db <- readRDS(gzcon(con))
-  rownames(db) <- NULL
-  db = as.data.frame(db)
-  # deduplicate columns - main issue seen is that there are two MD5sum columns
-  db = db[,!duplicated(colnames(db))]
-  return(db)
-}
-
 #' @import dplyr
 #' @export
-findRspeakers <- function(emailPattern = "", max_distance_km = 100, lat=NA, lon=NA, data_file = "geoLocatedEMailDomains.csv"){
+findRspeakers <- function(domainPattern = "", max_distance_km = 100, lat=NA, lon=NA, data_file = "geoLocatedDomains.csv"){
   
   colsToReturn = c("Package", "Title", "Author", "Maintainer", "Description", "Version", "URL", "Published", "Distance")
   
@@ -27,12 +15,12 @@ findRspeakers <- function(emailPattern = "", max_distance_km = 100, lat=NA, lon=
     
     packagesDomainsAndDistances = get_packages_by_distance(cran_db, data_file, lat, lon)
     
-    if (emailPattern != ""){
+    if (domainPattern != ""){
       # find nearby packages by minimum distance to the author/maintainer e-mail domains
       # also filter by domain pattern
       matchingPackages = packagesDomainsAndDistances %>% 
         filter(Distance <= max_distance_km, 
-               grepl(emailPattern, Domain)) %>% 
+               grepl(domainPattern, Domain)) %>% 
         group_by(Package) %>% 
         slice(which.min(Distance)) %>% 
         ungroup() %>% 
@@ -48,13 +36,13 @@ findRspeakers <- function(emailPattern = "", max_distance_km = 100, lat=NA, lon=
         inner_join(cran_db) %>%
         arrange(Distance)
     }
-  } else if (emailPattern != ""){
-    allPackagesAndEmailDomains = get_email_domains_per_package(cran_db)
-    matchingPackages = allPackagesAndEmailDomains %>% 
-      filter(grepl(emailPattern, Domain)) %>% 
+  } else if (domainPattern != ""){
+    allPackagesAndDomains = get_domains_per_package(cran_db)
+    matchingPackages = allPackagesAndDomains %>% 
+      filter(grepl(domainPattern, Domain)) %>% 
       inner_join(cran_db)
   } else {
-    warning("No search parameters specified (e-mail domain pattern and/or coordinates).  No results will be returned.")
+    warning("No search parameters specified (domain pattern and/or coordinates).  No results will be returned.")
   }
   
   if (is.null(matchingPackages)){
@@ -71,14 +59,41 @@ findRspeakers <- function(emailPattern = "", max_distance_km = 100, lat=NA, lon=
   return(matchingPackages)
 }
 
+get_cran_database <- function(){
+  url = "http://cran.r-project.org/web/packages/packages.rds"
+  filename = "packages.rds"
+  
+  # don't redownload if we have an existing copy of the database that is less than a day old
+  downloadPackageData = TRUE
+  if (file.exists(filename)){
+    info <- file.info(filename)
+    if (as.numeric(Sys.time() - info$mtime) < 24){
+      downloadPackageData = FALSE
+      print("Using existing packages.rds file that is < 24 hours old")
+    }
+  }
+  
+  if (downloadPackageData){
+    download.file(url, filename)  
+  }
+  
+  db <- readRDS(filename)
+  rownames(db) <- NULL
+  db = as.data.frame(db)
+  # deduplicate columns - main issue seen is that there are two MD5sum columns
+  db = db[,!duplicated(colnames(db))]
+  return(db)
+}
+
+
 #' @import geosphere
 get_packages_by_distance <- function(cran_db, data_file, lat, lon){
   # update our information about where e-mail domains are geolocated
-  geoInfo = geolocate_email_addresses(cran_db, data_file)
+  geoInfo = geolocate_domains(cran_db, data_file)
   
   # grab the returned data frames
-  geoDomains = geoInfo$geoLocatedEMailDomains
-  packagesAndDomains = geoInfo$allPackagesAndEmailDomains
+  geoDomains = geoInfo$geoLocatedDomains
+  packagesAndDomains = geoInfo$allPackagesAndDomains
   
   # remove domains for which no coordinates were found
   geoDomains = geoDomains[which(!is.na(geoDomains$latitude)),]
@@ -93,90 +108,115 @@ get_packages_by_distance <- function(cran_db, data_file, lat, lon){
 }
 
 #' @import rgeolocate
-geolocate_email_addresses <- function(cran_db, data_file = "geoLocatedEMailDomains.csv"){
-  allPackagesAndEmailDomains = get_email_domains_per_package(cran_db)
+geolocate_domains <- function(cran_db, data_file = "geoLocatedDomains.csv"){
+  allPackagesAndDomains = get_domains_per_package(cran_db)
   
-  allDomains = unique(allPackagesAndEmailDomains$Domain)
+  allDomains = unique(allPackagesAndDomains$Domain)
   
   if (file.exists(data_file)){
-    geoLocatedEMailDomains = read.csv(data_file)
-    missingDataDomains = setdiff(allDomains, geoLocatedEMailDomains$DomainQueried)
+    geoLocatedDomains = read.csv(data_file)
+    missingDataDomains = setdiff(allDomains, geoLocatedDomains$DomainQueried)
   } else {
     missingDataDomains = allDomains
   }
   
   missingDataDomains = missingDataDomains[which(missingDataDomains != "")]
   
-  tmp_geoLocatedEMailDomains = NULL
+  tmp_geoLocatedDomains = NULL
   if (length(missingDataDomains) > 0){
     # This takes about 20 minutes for ~8000 CRAN packages with 2000 domains
     start.time <- Sys.time()
-    tmp_geoLocatedEMailDomains = ip_api(missingDataDomains, delay=TRUE)
+    tmp_geoLocatedDomains = ip_api(missingDataDomains, delay=TRUE)
     end.time <- Sys.time()
     print(paste("geolocating", length(missingDataDomains), "domains in", end.time - start.time, "minutes"))
-    tmp_geoLocatedEMailDomains$DomainQueried = missingDataDomains
+    tmp_geoLocatedDomains$DomainQueried = missingDataDomains
   }
   
   if (file.exists(data_file)){
-    if (!is.null(tmp_geoLocatedEMailDomains)){
-      geoLocatedEMailDomains = rbind(geoLocatedEMailDomains, tmp_geoLocatedEMailDomains)  
-    } # else we have no updates, geoLocatedEMailDomains as read from file is already up to date
+    if (!is.null(tmp_geoLocatedDomains)){
+      geoLocatedDomains = rbind(geoLocatedDomains, tmp_geoLocatedDomains)  
+    } # else we have no updates, geoLocatedDomains as read from file is already up to date
     
   } else { # no data file yet, use all the results we have just gathered
-    geoLocatedEMailDomains = tmp_geoLocatedEMailDomains
+    geoLocatedDomains = tmp_geoLocatedDomains
   }
   
-  geoLocatedEMailDomains$latitude = as.numeric(geoLocatedEMailDomains$latitude)
-  geoLocatedEMailDomains$longitude = as.numeric(geoLocatedEMailDomains$longitude)
+  geoLocatedDomains$latitude = as.numeric(geoLocatedDomains$latitude)
+  geoLocatedDomains$longitude = as.numeric(geoLocatedDomains$longitude)
   
-  geoLocatedEMailDomains = geoLocatedEMailDomains[which(geoLocatedEMailDomains$DomainQueried != ""),]
+  geoLocatedDomains = geoLocatedDomains[which(geoLocatedDomains$DomainQueried != ""),]
   
-  write.table(geoLocatedEMailDomains, data_file, sep=",", row.names = FALSE)
+  write.table(geoLocatedDomains, data_file, sep=",", row.names = FALSE)
   
-  return(list(geoLocatedEMailDomains = geoLocatedEMailDomains,
-              allPackagesAndEmailDomains = allPackagesAndEmailDomains))
+  return(list(geoLocatedDomains = geoLocatedDomains,
+              allPackagesAndDomains = allPackagesAndDomains))
 }
 
-get_email_domains_per_package <- function(cran_db){
-  allPackagesAndEmailDomains = c()
+get_domains_per_package <- function(cran_db){
+  allPackagesAndDomains = c()
   
-  # extract all the e-mail domains
-  allEmails = c()
-  packageIndex = 0
+  # these domains that don't give us much geo info
+  domainsToIgnore = c("bitbucket.org", "r-project.org", "github.com", "github.org", "sourceforge.net", "code.google.com")
   
-  for (maintainer in cran_db$Maintainer){
-    packageIndex = packageIndex + 1
+  domainsToIgnoreRegEx = paste0(gsub("\\.", "\\\\.", domainsToIgnore), collapse="|")
+  
+  # clean up the URLs so that they're easier to work with  
+  cran_db$URL = gsub("Mailing list:", "", cran_db$URL)
+  cran_db$URL = gsub("\n", "", cran_db$URL)
+  cran_db$URL = gsub(", +", ",", cran_db$URL)
+  # take out https and http bits
+  cran_db$URL = gsub("http[s]*://", "", cran_db$URL)
+  cran_db$URL = tolower(cran_db$URL)
+  
+  for (packageIndex in c(1:nrow(cran_db))){
+    
     package = cran_db$Package[packageIndex]
+    
+    #### get package url date
+    urls = strsplit(cran_db$URL[packageIndex], ",")[[1]]
+    for (url in urls){
+      domain = strsplit(url, "/")[[1]][1]
+      
+      # if we don't get a match, then it's ok to add
+      # this ignores domains like github which don't give us any useful geo information
+      if (grepl(domainsToIgnoreRegEx, domain) == FALSE)
+        if (!is.na(domain)){
+          allPackagesAndDomains = rbind(allPackagesAndDomains, c(package, domain))    
+        }
+    }
+    
+    ##### get maintainer data
+    maintainer = cran_db$Maintainer[packageIndex]
     domain = gsub(">", "", strsplit(maintainer, "@")[[1]][2])
     if (!is.na(domain)){
-      allPackagesAndEmailDomains = rbind(allPackagesAndEmailDomains, c(package, domain))  
+      allPackagesAndDomains = rbind(allPackagesAndDomains, c(package, domain))  
     }
-  }
-  
-  packageIndex = 0
-  for (authors in cran_db$`Authors@R`){
-    packageIndex = packageIndex + 1
-    package = cran_db$Package[packageIndex]
+    
+    ##### get author data
+    authors = cran_db$`Authors@R`[packageIndex]
     people = eval(parse(text=authors))
     if (class(people) == "character"){
       people = as.person(people)
     }
     for (person in people){
-      if (class(person) == "list"){
+      if (class(person) == "person"){
         if (!is.null(person$email)){
           domain = strsplit(person$email, "@")[[1]][2]
           if (!is.na(domain)){
             # keep track of which domains occur with which packages
-            allPackagesAndEmailDomains = rbind(allPackagesAndEmailDomains, c(package, domain))
+            allPackagesAndDomains = rbind(allPackagesAndDomains, c(package, domain))
           }
         }
       }
     }
-  }
+  }  
   
-  allPackagesAndEmailDomains = allPackagesAndEmailDomains[!duplicated(allPackagesAndEmailDomains),]
-  allPackagesAndEmailDomains = as.data.frame(allPackagesAndEmailDomains)
-  colnames(allPackagesAndEmailDomains) = c("Package", "Domain")
+  allPackagesAndDomains = allPackagesAndDomains[!duplicated(allPackagesAndDomains),]
+  allPackagesAndDomains = as.data.frame(allPackagesAndDomains)
+  colnames(allPackagesAndDomains) = c("Package", "Domain")
   
-  return(allPackagesAndEmailDomains)
+  # at least one domain has quotes added to it
+  allPackagesAndDomains$Domain = gsub('"', '', allPackagesAndDomains$Domain)
+  
+  return(allPackagesAndDomains)
 }

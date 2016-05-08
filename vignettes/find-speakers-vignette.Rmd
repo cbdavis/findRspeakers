@@ -13,8 +13,10 @@ Find all e-mail addresses on CRAN which contain "rug.nl"
 ```{r}
 library(findRspeakers)
 library(pander)
-possibleSpeakers = findRspeakers(emailPattern = "\\.nl|\\.de", 
-                                 lat = 53.21667, lon = 6.566667, data_file="/home/cbdavis/Desktop/svn/findRspeakers/geoLocatedEMailDomains.csv")
+
+possibleSpeakers = findRspeakers(lat = 53.21667, 
+                                 lon = 6.566667, 
+                                 data_file="/home/cbdavis/Desktop/svn/findRspeakers/geoLocatedDomains.csv")
 
 # split the results into several subtables
 pander(possibleSpeakers[,c("Package", "Title",  "Author", "Maintainer", "Distance")], split.table=Inf)
