@@ -12,38 +12,41 @@ get_cran_database <- function(){
   return(db)
 }
 
-
+#' @import dplyr
+#' @export
 findRspeakers <- function(emailPattern = "", max_distance_km = 100, lat=NA, lon=NA, data_file = "geoLocatedEMailDomains.csv"){
+  
+  colsToReturn = c("Package", "Title", "Author", "Maintainer", "Description", "Version", "URL", "Published", "Distance")
   
   # get the latest metadata from CRAN
   cran_db = get_cran_database()
   
-  matchingPackages = c()
+  matchingPackages = NULL
   
   if (!is.na(lat) & !is.na(lon)){
     
-    packagesDomainsAndDistances = get_packages_by_distance(cran_db, data_file)
+    packagesDomainsAndDistances = get_packages_by_distance(cran_db, data_file, lat, lon)
     
     if (emailPattern != ""){
       # find nearby packages by minimum distance to the author/maintainer e-mail domains
       # also filter by domain pattern
       matchingPackages = packagesDomainsAndDistances %>% 
-        filter(distance <= max_distance_km, 
+        filter(Distance <= max_distance_km, 
                grepl(emailPattern, Domain)) %>% 
         group_by(Package) %>% 
-        slice(which.min(distance)) %>% 
+        slice(which.min(Distance)) %>% 
         ungroup() %>% 
         inner_join(cran_db) %>%
-        arrange(distance)
+        arrange(Distance)
     } else {
       # find nearby packages by minimum distance to the author/maintainer e-mail domains
       matchingPackages = packagesDomainsAndDistances %>% 
-        filter(distance <= max_distance_km) %>% 
+        filter(Distance <= max_distance_km) %>% 
         group_by(Package) %>% 
-        slice(which.min(distance)) %>% 
+        slice(which.min(Distance)) %>% 
         ungroup() %>% 
         inner_join(cran_db) %>%
-        arrange(distance)
+        arrange(Distance)
     }
   } else if (emailPattern != ""){
     allPackagesAndEmailDomains = get_email_domains_per_package(cran_db)
@@ -54,25 +57,22 @@ findRspeakers <- function(emailPattern = "", max_distance_km = 100, lat=NA, lon=
     warning("No search parameters specified (e-mail domain pattern and/or coordinates).  No results will be returned.")
   }
   
-  #grab only rows of interest and reorder columns
-  possibleSpeakers = cran_db[rowsWithMatchingAuthors,c("Package", 
-                                                       "Title", 
-                                                       "Author", 
-                                                       "Maintainer", 
-                                                       "Description",
-                                                       "Version", 
-                                                       "URL",
-                                                       "Published")]
-  
-  #remove new line characters to help with formatting
-  possibleSpeakers = as.data.frame(apply(possibleSpeakers, 2, function(x) {gsub("\n", " ", x)}))
-  row.names(possibleSpeakers) = NULL
-  
-  return(possibleSpeakers)
+  if (is.null(matchingPackages)){
+    warning("No matching packages found")
+  } else {
+    # We want the Distance column, but only if it exists
+    existingColsToReturn = intersect(colnames(matchingPackages), colsToReturn)
+    matchingPackages = matchingPackages[,existingColsToReturn]
+    
+    #remove new line characters to help with formatting
+    matchingPackages = apply(matchingPackages, 2, function(x) {gsub("\n", " ", x)})
+    row.names(matchingPackages) = NULL
+  }
+  return(matchingPackages)
 }
 
-
-get_packages_by_distance <- function(cran_db, data_file){
+#' @import geosphere
+get_packages_by_distance <- function(cran_db, data_file, lat, lon){
   # update our information about where e-mail domains are geolocated
   geoInfo = geolocate_email_addresses(cran_db, data_file)
   
@@ -84,7 +84,7 @@ get_packages_by_distance <- function(cran_db, data_file){
   geoDomains = geoDomains[which(!is.na(geoDomains$latitude)),]
   
   # calculate the distances from our specified location
-  geoDomains$distance = (distCosine(c(lon, lat), cbind(geoDomains$longitude, geoDomains$latitude)))/1000  
+  geoDomains$Distance = (distCosine(c(lon, lat), cbind(geoDomains$longitude, geoDomains$latitude)))/1000  
   
   # merge together the data frames on packages, domains, and where those domains are located
   packagesDomainsAndDistances = merge(packagesAndDomains, geoDomains, by.x="Domain", by.y="DomainQueried")
@@ -92,6 +92,7 @@ get_packages_by_distance <- function(cran_db, data_file){
   return(packagesDomainsAndDistances)  
 }
 
+#' @import rgeolocate
 geolocate_email_addresses <- function(cran_db, data_file = "geoLocatedEMailDomains.csv"){
   allPackagesAndEmailDomains = get_email_domains_per_package(cran_db)
   
@@ -106,6 +107,7 @@ geolocate_email_addresses <- function(cran_db, data_file = "geoLocatedEMailDomai
   
   missingDataDomains = missingDataDomains[which(missingDataDomains != "")]
   
+  tmp_geoLocatedEMailDomains = NULL
   if (length(missingDataDomains) > 0){
     # This takes about 20 minutes for ~8000 CRAN packages with 2000 domains
     start.time <- Sys.time()
@@ -116,8 +118,11 @@ geolocate_email_addresses <- function(cran_db, data_file = "geoLocatedEMailDomai
   }
   
   if (file.exists(data_file)){
-    geoLocatedEMailDomains = rbind(geoLocatedEMailDomains, tmp_geoLocatedEMailDomains)
-  } else {
+    if (!is.null(tmp_geoLocatedEMailDomains)){
+      geoLocatedEMailDomains = rbind(geoLocatedEMailDomains, tmp_geoLocatedEMailDomains)  
+    } # else we have no updates, geoLocatedEMailDomains as read from file is already up to date
+    
+  } else { # no data file yet, use all the results we have just gathered
     geoLocatedEMailDomains = tmp_geoLocatedEMailDomains
   }
   

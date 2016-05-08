@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Chris Davis" />
+
+<meta name="date" content="2016-05-08" />
+
+<title>Using the findRspeakers package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Using the findRspeakers package</h1>
+<h4 class="author"><em>Chris Davis</em></h4>
+<h4 class="date"><em>2016-05-08</em></h4>
+
+
+
+<p>Find all e-mail addresses on CRAN which contain “rug.nl”</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(findRspeakers)
+<span class="kw">library</span>(pander)
+possibleSpeakers =<span class="st"> </span><span class="kw">findRspeakers</span>(<span class="dt">emailPattern =</span> <span class="st">&quot;</span><span class="ch">\\</span><span class="st">.nl|</span><span class="ch">\\</span><span class="st">.de&quot;</span>, 
+                                 <span class="dt">lat =</span> <span class="fl">53.21667</span>, <span class="dt">lon =</span> <span class="fl">6.566667</span>, <span class="dt">data_file=</span><span class="st">&quot;/home/cbdavis/Desktop/svn/findRspeakers/geoLocatedEMailDomains.csv&quot;</span>)</code></pre></div>
+<pre><code>## Joining by: &quot;Package&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># split the results into several subtables</span>
+<span class="kw">pander</span>(possibleSpeakers[,<span class="kw">c</span>(<span class="st">&quot;Package&quot;</span>, <span class="st">&quot;Title&quot;</span>,  <span class="st">&quot;Author&quot;</span>, <span class="st">&quot;Maintainer&quot;</span>, <span class="st">&quot;Distance&quot;</span>)], <span class="dt">split.table=</span><span class="ot">Inf</span>)</code></pre></div>
+<table>
+<colgroup>
+<col width="10%"></col>
+<col width="26%"></col>
+<col width="30%"></col>
+<col width="25%"></col>
+<col width="8%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Package</th>
+<th align="center">Title</th>
+<th align="center">Author</th>
+<th align="center">Maintainer</th>
+<th align="center">Distance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">BDgraph</td>
+<td align="center">Bayesian Graph Selection Based on Birth-Death MCMC Approach</td>
+<td align="center">Abdolreza Mohammadi and Ernst Wit</td>
+<td align="center">Abdolreza Mohammadi <a href="mailto:a.mohammadi@rug.nl">a.mohammadi@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="even">
+<td align="center">DAISIE</td>
+<td align="center">Dynamical Assembly of Islands by Speciation, Immigration and Extinction</td>
+<td align="center">Rampal S. Etienne, Luis M. Valente, Albert B. Phillimore &amp; Bart Haegenan</td>
+<td align="center">Rampal S. Etienne <a href="mailto:r.s.etienne@rug.nl">r.s.etienne@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="odd">
+<td align="center">DAMOCLES</td>
+<td align="center">Dynamic Assembly Model of Colonization, Local Extinction and Speciation</td>
+<td align="center">Rampal S. Etienne &amp; Alex L. Pigot</td>
+<td align="center">Rampal S. Etienne <a href="mailto:r.s.etienne@rug.nl">r.s.etienne@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="even">
+<td align="center">DDD</td>
+<td align="center">Diversity-Dependent Diversification</td>
+<td align="center">Rampal S. Etienne &amp; Bart Haegeman</td>
+<td align="center">Rampal S. Etienne <a href="mailto:r.s.etienne@rug.nl">r.s.etienne@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="odd">
+<td align="center">designGG</td>
+<td align="center">Computational tool for designing genetical genomics experiments</td>
+<td align="center">Yang Li <a href="mailto:yang.li@rug.nl">yang.li@rug.nl</a>, Morris Swertz <a href="mailto:m.a.swertz@rug.nl">m.a.swertz@rug.nl</a>, Gonzalo Vera <a href="mailto:gonzalo.vera.rodriguez@gmail.com">gonzalo.vera.rodriguez@gmail.com</a>, Rainer Breitling <a href="mailto:r.breitling@rug.nl">r.breitling@rug.nl</a>, Ritsert Jansen <a href="mailto:r.c.jansen@rug.nl">r.c.jansen@rug.nl</a></td>
+<td align="center">Yang Li <a href="mailto:yang.li@rug.nl">yang.li@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="even">
+<td align="center">gemtc</td>
+<td align="center">Network Meta-Analysis Using Bayesian Methods</td>
+<td align="center">Gert van Valkenhoef, Joel Kuiper</td>
+<td align="center">Gert van Valkenhoef <a href="mailto:g.h.m.van.valkenhoef@rug.nl">g.h.m.van.valkenhoef@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="odd">
+<td align="center">gemtc.jar</td>
+<td align="center">GeMTC Java binary</td>
+<td align="center">Gert van Valkenhoef, Joel Kuiper</td>
+<td align="center">Gert van Valkenhoef <a href="mailto:g.h.m.van.valkenhoef@rug.nl">g.h.m.van.valkenhoef@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="even">
+<td align="center">hitandrun</td>
+<td align="center">“Hit and Run” and “Shake and Bake” for Sampling Uniformly from Convex Shapes</td>
+<td align="center">Gert van Valkenhoef, Tommi Tervonen</td>
+<td align="center">Gert van Valkenhoef <a href="mailto:g.h.m.van.valkenhoef@rug.nl">g.h.m.van.valkenhoef@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="odd">
+<td align="center">lavaan</td>
+<td align="center">Latent Variable Analysis</td>
+<td align="center">Yves Rosseel [aut, cre], Daniel Oberski [ctb], Jarrett Byrnes [ctb], Leonard Vanbrabant [ctb], Victoria Savalei [ctb], Ed Merkle [ctb], Michael Hallquist [ctb], Mijke Rhemtulla [ctb], Myrsini Katsikatsou [ctb], Mariska Barendse [ctb]</td>
+<td align="center">Yves Rosseel <a href="mailto:Yves.Rosseel@UGent.be">Yves.Rosseel@UGent.be</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="even">
+<td align="center">neat</td>
+<td align="center">Network Enrichment Analysis Test (NEAT)</td>
+<td align="center">Mirko Signorelli, Veronica Vinciotti and Ernst C. Wit</td>
+<td align="center">Mirko Signorelli <a href="mailto:m.signorelli@rug.nl">m.signorelli@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="odd">
+<td align="center">NetSim</td>
+<td align="center">A Social Networks Simulation Tool in R</td>
+<td align="center">Christoph Stadtfeld</td>
+<td align="center">Christoph Stadtfeld <a href="mailto:c.stadtfeld@rug.nl">c.stadtfeld@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="even">
+<td align="center">PBD</td>
+<td align="center">Protracted Birth-Death Model of Diversification</td>
+<td align="center">Rampal S. Etienne</td>
+<td align="center">Rampal S. Etienne <a href="mailto:r.s.etienne@rug.nl">r.s.etienne@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="odd">
+<td align="center">PerFit</td>
+<td align="center">Person Fit</td>
+<td align="center">Jorge N. Tendeiro</td>
+<td align="center">Jorge N. Tendeiro <a href="mailto:j.n.tendeiro@rug.nl">j.n.tendeiro@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="even">
+<td align="center">pheno2geno</td>
+<td align="center">High-Throughput Generation of Genetic Markers and Maps from Molecular Phenotypes for Crosses Between Inbred Strains</td>
+<td align="center">Konrad Zych <a href="mailto:k.zych@rug.nl">k.zych@rug.nl</a> and Danny Arends <a href="mailto:danny.arends@gmail.com">danny.arends@gmail.com</a></td>
+<td align="center">Konrad Zych <a href="mailto:k.zych@rug.nl">k.zych@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="odd">
+<td align="center">pnea</td>
+<td align="center">Parametric Network Enrichment Analysis</td>
+<td align="center">Mirko Signorelli, Veronica Vinciotti and Ernst C. Wit</td>
+<td align="center">Mirko Signorelli <a href="mailto:m.signorelli@rug.nl">m.signorelli@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="even">
+<td align="center">reGenotyper</td>
+<td align="center">Detecting Mislabeled Samples in Genetic Data</td>
+<td align="center">Yang Li <a href="mailto:yang.li@rug.nl">yang.li@rug.nl</a></td>
+<td align="center">Yang Li <a href="mailto:yang.li@rug.nl">yang.li@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="odd">
+<td align="center">smaa</td>
+<td align="center">Stochastic Multi-Criteria Acceptability Analysis</td>
+<td align="center">Gert van Valkenhoef</td>
+<td align="center">Gert van Valkenhoef <a href="mailto:g.h.m.van.valkenhoef@rug.nl">g.h.m.van.valkenhoef@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="even">
+<td align="center">SparseTSCGM</td>
+<td align="center">Sparse Time Series Chain Graphical Models</td>
+<td align="center">Fentaw Abegaz and Ernst Wit</td>
+<td align="center">Fentaw Abegaz <a href="mailto:f.abegaz.yazew@rug.nl">f.abegaz.yazew@rug.nl</a></td>
+<td align="center">0.2816469</td>
+</tr>
+<tr class="odd">
+<td align="center">hqmisc</td>
+<td align="center">Miscellaneous convenience functions and dataset</td>
+<td align="center">Hugo Quené [aut, cre]</td>
+<td align="center">Hugo Quene <a href="mailto:h.quene@uu.nl">h.quene@uu.nl</a></td>
+<td align="center">65.3116101</td>
+</tr>
+<tr class="even">
+<td align="center">mice</td>
+<td align="center">Multivariate Imputation by Chained Equations</td>
+<td align="center">Stef van Buuren [aut, cre], Karin Groothuis-Oudshoorn [aut], Alexander Robitzsch [ctb], Gerko Vink [ctb], Lisa Doove [ctb], Shahab Jolani [ctb]</td>
+<td align="center">Stef van Buuren <a href="mailto:stef.vanbuuren@tno.nl">stef.vanbuuren@tno.nl</a></td>
+<td align="center">65.3116101</td>
+</tr>
+<tr class="odd">
+<td align="center">SSrat</td>
+<td align="center">Two-dimensional sociometric status determination with rating scales</td>
+<td align="center">Hans Landsheer</td>
+<td align="center">Hans Landsheer <a href="mailto:j.a.landsheer@uu.nl">j.a.landsheer@uu.nl</a></td>
+<td align="center">65.3116101</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">pander</span>(possibleSpeakers[,<span class="kw">c</span>(<span class="st">&quot;Package&quot;</span>, <span class="st">&quot;Title&quot;</span>,  <span class="st">&quot;Description&quot;</span>)], <span class="dt">split.table=</span><span class="ot">Inf</span>)</code></pre></div>
+<table>
+<colgroup>
+<col width="15%"></col>
+<col width="39%"></col>
+<col width="45%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Package</th>
+<th align="center">Title</th>
+<th align="center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">BDgraph</td>
+<td align="center">Bayesian Graph Selection Based on Birth-Death MCMC Approach</td>
+<td align="center">Provides statistical tools for Bayesian structure learning in undirected graphical models with both continuous and discrete variables.</td>
+</tr>
+<tr class="even">
+<td align="center">DAISIE</td>
+<td align="center">Dynamical Assembly of Islands by Speciation, Immigration and Extinction</td>
+<td align="center">Simulates and computes the (maximum) likelihood of a dynamical model of island biota assembly through speciation, immigration and extinction. See Valente et al. 2015. Ecology Letters 18: 844-852.</td>
+</tr>
+<tr class="odd">
+<td align="center">DAMOCLES</td>
+<td align="center">Dynamic Assembly Model of Colonization, Local Extinction and Speciation</td>
+<td align="center">Simulates and computes (maximum) likelihood of a dynamical model of community assembly that takes into account phylogenetic history.</td>
+</tr>
+<tr class="even">
+<td align="center">DDD</td>
+<td align="center">Diversity-Dependent Diversification</td>
+<td align="center">Implements maximum likelihood methods based on the diversity-dependent birth-death process to test whether speciation or extinction are diversity-dependent. See Etienne et al. 2012, Proc. Roy. Soc. B 279: 1300-1309, <a href="DOI:10.1098/rspb.2011.1439" class="uri">DOI:10.1098/rspb.2011.1439</a>. Also implements maximum likelihood methods to detect various types of key innovations in the light of diversity-dependence. See Etienne &amp; Haegeman 2012, Am. Nat. 180: E75-E89, <a href="DOI:10.1086/667574" class="uri">DOI:10.1086/667574</a>. Finally, DDD contains a function to simulate the diversity-dependent process.</td>
+</tr>
+<tr class="odd">
+<td align="center">designGG</td>
+<td align="center">Computational tool for designing genetical genomics experiments</td>
+<td align="center">The package provides R scripts for designing genetical genomics experiments.</td>
+</tr>
+<tr class="even">
+<td align="center">gemtc</td>
+<td align="center">Network Meta-Analysis Using Bayesian Methods</td>
+<td align="center">Network meta-analyses (mixed treatment comparisons) in the Bayesian framework using JAGS. Includes methods to assess heterogeneity and inconsistency, and a number of standard visualizations.</td>
+</tr>
+<tr class="odd">
+<td align="center">gemtc.jar</td>
+<td align="center">GeMTC Java binary</td>
+<td align="center">An R package providing the Java JAR for the gemtc package</td>
+</tr>
+<tr class="even">
+<td align="center">hitandrun</td>
+<td align="center">“Hit and Run” and “Shake and Bake” for Sampling Uniformly from Convex Shapes</td>
+<td align="center">The “Hit and Run” Markov Chain Monte Carlo method for sampling uniformly from convex shapes defined by linear constraints, and the “Shake and Bake” method for sampling from the boundary of such shapes. Includes specialized functions for sampling normalized weights with arbitrary linear constraints.</td>
+</tr>
+<tr class="odd">
+<td align="center">lavaan</td>
+<td align="center">Latent Variable Analysis</td>
+<td align="center">Fit a variety of latent variable models, including confirmatory factor analysis, structural equation modeling and latent growth curve models.</td>
+</tr>
+<tr class="even">
+<td align="center">neat</td>
+<td align="center">Network Enrichment Analysis Test (NEAT)</td>
+<td align="center">Includes functions and examples to compute NEAT, a network-based test for gene enrichment analysis.</td>
+</tr>
+<tr class="odd">
+<td align="center">NetSim</td>
+<td align="center">A Social Networks Simulation Tool in R</td>
+<td align="center">NetSim allows to combine and simulate a variety of micro-models to research their impact on the macro-features of social networks.</td>
+</tr>
+<tr class="even">
+<td align="center">PBD</td>
+<td align="center">Protracted Birth-Death Model of Diversification</td>
+<td align="center">Conducts maximum likelihood analysis and simulation of the protracted speciation model.</td>
+</tr>
+<tr class="odd">
+<td align="center">PerFit</td>
+<td align="center">Person Fit</td>
+<td align="center">Several person-fit statistics (PFSs) are offered. These statistics allow assessing whether individual response patterns to tests or questionnaires are (im)plausible given the other respondents in the sample or given a specified item response theory model. Some PFSs apply to dichotomous data, such as the likelihood-based PFSs (lz, lz*) and the group-based PFSs (personal biserial correlation, caution index, (normed) number of Guttman errors, agreement/disagreement/dependability statistics, U3, ZU3, NCI, Ht). PFSs suitable to polytomous data include extensions of lz, U3, and (normed) number of Guttman errors.</td>
+</tr>
+<tr class="even">
+<td align="center">pheno2geno</td>
+<td align="center">High-Throughput Generation of Genetic Markers and Maps from Molecular Phenotypes for Crosses Between Inbred Strains</td>
+<td align="center">High-throughput generation of genetic markers from molecular phenotypes for crosses between inbred strains. These markers can be use to saturate existing genetic map or creating a new one.</td>
+</tr>
+<tr class="odd">
+<td align="center">pnea</td>
+<td align="center">Parametric Network Enrichment Analysis</td>
+<td align="center">Includes functions and examples to compute Parametric Network Enrichment Analysis.</td>
+</tr>
+<tr class="even">
+<td align="center">reGenotyper</td>
+<td align="center">Detecting Mislabeled Samples in Genetic Data</td>
+<td align="center">Detecting mislabeled samples in genetic data.</td>
+</tr>
+<tr class="odd">
+<td align="center">smaa</td>
+<td align="center">Stochastic Multi-Criteria Acceptability Analysis</td>
+<td align="center">Implementation of the Stochastic Multi-Criteria Acceptability Analysis (SMAA) family of Multiple Criteria Decision Analysis (MCDA) methods.</td>
+</tr>
+<tr class="even">
+<td align="center">SparseTSCGM</td>
+<td align="center">Sparse Time Series Chain Graphical Models</td>
+<td align="center">Computes sparse vector autoregressive coefficients and precision matrices for time series chain graphical models.</td>
+</tr>
+<tr class="odd">
+<td align="center">hqmisc</td>
+<td align="center">Miscellaneous convenience functions and dataset</td>
+<td align="center">This package contains some miscellaneous convenience functions, to create a matrix of dummy columns from a factor, to determine whether x lies in range [a,b], to add a rectangular bracket to an existing plot, and to convert frequencies between Hz, semitones, mel and Bark. This package also contains an example data set of a stratified sample of 80 talkers of Dutch.</td>
+</tr>
+<tr class="even">
+<td align="center">mice</td>
+<td align="center">Multivariate Imputation by Chained Equations</td>
+<td align="center">Multiple imputation using Fully Conditional Specification (FCS) implemented by the MICE algorithm. Each variable has its own imputation model. Built-in imputation models are provided for continuous data (predictive mean matching, normal), binary data (logistic regression), unordered categorical data (polytomous logistic regression) and ordered categorical data (proportional odds). MICE can also impute continuous two-level data (normal model, pan, second-level variables). Passive imputation can be used to maintain consistency between variables. Various diagnostic plots are available to inspect the quality of the imputations.</td>
+</tr>
+<tr class="odd">
+<td align="center">SSrat</td>
+<td align="center">Two-dimensional sociometric status determination with rating scales</td>
+<td align="center">SSRAT is a computer program for two-dimensional sociometric status determination with rating scales. For each person assessed, SSRAT computes probability distributions of the total scores for <code>sympathy' (S),</code>antipathy’ (A), <code>social preference' (P) and</code>social impact’ (I), and applies the criteria for sociometric status categorization.</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">pander</span>(possibleSpeakers[,<span class="kw">c</span>(<span class="st">&quot;Package&quot;</span>, <span class="st">&quot;Title&quot;</span>,  <span class="st">&quot;Version&quot;</span>, <span class="st">&quot;URL&quot;</span>, <span class="st">&quot;Published&quot;</span>)], <span class="dt">split.table=</span><span class="ot">Inf</span>)</code></pre></div>
+<table>
+<colgroup>
+<col width="9%"></col>
+<col width="24%"></col>
+<col width="7%"></col>
+<col width="49%"></col>
+<col width="8%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Package</th>
+<th align="center">Title</th>
+<th align="center">Version</th>
+<th align="center">URL</th>
+<th align="center">Published</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">BDgraph</td>
+<td align="center">Bayesian Graph Selection Based on Birth-Death MCMC Approach</td>
+<td align="center">2.27</td>
+<td align="center"><a href="https://www.tilburguniversity.edu/webwijs/show/a.mohammadi.htm" class="uri">https://www.tilburguniversity.edu/webwijs/show/a.mohammadi.htm</a></td>
+<td align="center">2016-04-22</td>
+</tr>
+<tr class="even">
+<td align="center">DAISIE</td>
+<td align="center">Dynamical Assembly of Islands by Speciation, Immigration and Extinction</td>
+<td align="center">1.0.2</td>
+<td align="center">NA</td>
+<td align="center">2015-09-29</td>
+</tr>
+<tr class="odd">
+<td align="center">DAMOCLES</td>
+<td align="center">Dynamic Assembly Model of Colonization, Local Extinction and Speciation</td>
+<td align="center">1.1</td>
+<td align="center">NA</td>
+<td align="center">2015-03-05</td>
+</tr>
+<tr class="even">
+<td align="center">DDD</td>
+<td align="center">Diversity-Dependent Diversification</td>
+<td align="center">3.2</td>
+<td align="center">NA</td>
+<td align="center">2016-02-09</td>
+</tr>
+<tr class="odd">
+<td align="center">designGG</td>
+<td align="center">Computational tool for designing genetical genomics experiments</td>
+<td align="center">1.1</td>
+<td align="center"><a href="http://www.rug.nl/research/bioinformatics/" class="uri">http://www.rug.nl/research/bioinformatics/</a></td>
+<td align="center">2013-02-19</td>
+</tr>
+<tr class="even">
+<td align="center">gemtc</td>
+<td align="center">Network Meta-Analysis Using Bayesian Methods</td>
+<td align="center">0.8</td>
+<td align="center"><a href="http://github.com/gertvv/gemtc" class="uri">http://github.com/gertvv/gemtc</a></td>
+<td align="center">2016-03-01</td>
+</tr>
+<tr class="odd">
+<td align="center">gemtc.jar</td>
+<td align="center">GeMTC Java binary</td>
+<td align="center">0.14.3</td>
+<td align="center">NA</td>
+<td align="center">2013-01-21</td>
+</tr>
+<tr class="even">
+<td align="center">hitandrun</td>
+<td align="center">“Hit and Run” and “Shake and Bake” for Sampling Uniformly from Convex Shapes</td>
+<td align="center">0.5-2</td>
+<td align="center"><a href="http://github.com/gertvv/hitandrun" class="uri">http://github.com/gertvv/hitandrun</a></td>
+<td align="center">2015-07-10</td>
+</tr>
+<tr class="odd">
+<td align="center">lavaan</td>
+<td align="center">Latent Variable Analysis</td>
+<td align="center">0.5-20</td>
+<td align="center"><a href="http://lavaan.org" class="uri">http://lavaan.org</a></td>
+<td align="center">2015-11-07</td>
+</tr>
+<tr class="even">
+<td align="center">neat</td>
+<td align="center">Network Enrichment Analysis Test (NEAT)</td>
+<td align="center">0.0</td>
+<td align="center">NA</td>
+<td align="center">2016-04-21</td>
+</tr>
+<tr class="odd">
+<td align="center">NetSim</td>
+<td align="center">A Social Networks Simulation Tool in R</td>
+<td align="center">0.9</td>
+<td align="center">NA</td>
+<td align="center">2013-12-15</td>
+</tr>
+<tr class="even">
+<td align="center">PBD</td>
+<td align="center">Protracted Birth-Death Model of Diversification</td>
+<td align="center">1.2</td>
+<td align="center">NA</td>
+<td align="center">2016-03-04</td>
+</tr>
+<tr class="odd">
+<td align="center">PerFit</td>
+<td align="center">Person Fit</td>
+<td align="center">1.4</td>
+<td align="center">NA</td>
+<td align="center">2015-07-20</td>
+</tr>
+<tr class="even">
+<td align="center">pheno2geno</td>
+<td align="center">High-Throughput Generation of Genetic Markers and Maps from Molecular Phenotypes for Crosses Between Inbred Strains</td>
+<td align="center">1.3.1</td>
+<td align="center">NA</td>
+<td align="center">2015-03-25</td>
+</tr>
+<tr class="odd">
+<td align="center">pnea</td>
+<td align="center">Parametric Network Enrichment Analysis</td>
+<td align="center">1.2.4</td>
+<td align="center">NA</td>
+<td align="center">2016-01-12</td>
+</tr>
+<tr class="even">
+<td align="center">reGenotyper</td>
+<td align="center">Detecting Mislabeled Samples in Genetic Data</td>
+<td align="center">1.2.0</td>
+<td align="center">NA</td>
+<td align="center">2015-05-05</td>
+</tr>
+<tr class="odd">
+<td align="center">smaa</td>
+<td align="center">Stochastic Multi-Criteria Acceptability Analysis</td>
+<td align="center">0.2-4</td>
+<td align="center"><a href="http://github.com/gertvv/rsmaa" class="uri">http://github.com/gertvv/rsmaa</a></td>
+<td align="center">2015-07-10</td>
+</tr>
+<tr class="even">
+<td align="center">SparseTSCGM</td>
+<td align="center">Sparse Time Series Chain Graphical Models</td>
+<td align="center">2.2</td>
+<td align="center">NA</td>
+<td align="center">2015-07-16</td>
+</tr>
+<tr class="odd">
+<td align="center">hqmisc</td>
+<td align="center">Miscellaneous convenience functions and dataset</td>
+<td align="center">0.1-1</td>
+<td align="center">NA</td>
+<td align="center">2014-03-10</td>
+</tr>
+<tr class="even">
+<td align="center">mice</td>
+<td align="center">Multivariate Imputation by Chained Equations</td>
+<td align="center">2.25</td>
+<td align="center"><a href="http://www.stefvanbuuren.nl" class="uri">http://www.stefvanbuuren.nl</a> , <a href="http://www.multiple-imputation.com" class="uri">http://www.multiple-imputation.com</a></td>
+<td align="center">2015-11-09</td>
+</tr>
+<tr class="odd">
+<td align="center">SSrat</td>
+<td align="center">Two-dimensional sociometric status determination with rating scales</td>
+<td align="center">1.0</td>
+<td align="center">NA</td>
+<td align="center">2014-11-27</td>
+</tr>
+</tbody>
+</table>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
