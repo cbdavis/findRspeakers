@@ -3,11 +3,11 @@ Type: Package
 Title: Find potential R speakers nearby
 Version: 0.1.0
 Author: Chris Davis
-Maintainer: Chris Davis <cbdavis0101@gmail.com>
+Maintainer: Chris Davis <chris@cbdavis.org>
 Description: Find people nearby who can give presentations about their interesting work with R
-License: What license is it under?
+License: GPL-3
 LazyData: TRUE
-Imports: XML, RCurl
+Imports: XML, RCurl, geosphere, rgeolocate, dplyr
 Suggests: knitr,
     rmarkdown, 
     pander
