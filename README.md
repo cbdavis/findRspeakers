@@ -11,7 +11,7 @@ Of course you should **use R to find people to give presentations about R**.  Th
 * Search by geo distance to geolocated e-mail domains
 
 ## Installation
-The code needs a patched version of the [rgeolocate](https://github.com/Ironholds/rgeolocate) library which includes a longer time delay between API requests.  Without this, you will likely exceed the request rate limit.  [Future versions of rgeolocate will incorporate this patch](https://github.com/Ironholds/rgeolocate/pull/29). 
+The code needs a patched version of the [rgeolocate](https://github.com/Ironholds/rgeolocate) library which includes a longer time delay between API requests.  Without this, you will likely exceed the request rate limit and will need to [request to unblock your ip address](http://ip-api.com/docs/unban).  [Future versions of rgeolocate will incorporate this patch](https://github.com/Ironholds/rgeolocate/pull/29). 
 
 ```
 library(devtools)
