@@ -19,7 +19,7 @@ install_github("cbdavis/findRspeakers")
 ## Example use
 Find all speakers with e-mail addresses in the Netherlands or Germany, within the default distance (100 km) of the coordinates given.  Information on the packages is returned as a data frame, below `pander` is used to format the dataframe into an html table.
 
-`data_file` stores the results of geolocating domains.  When you run the code the first time, it may take 20-30 minutes to generate this file due to API request limits for the geolocation service being used.
+`data_file` stores the results of geolocating domains.  **When you run the code the first time, it may take 20-30 minutes to generate this file due to API request limits for the geolocation service being used.**
 
 `domainPattern` is a regular expression that is used to search by domains mentioned in the package metadata from CRAN.  The code finds domains in email addresses of authors and maintainers and also searches through package urls.
 
