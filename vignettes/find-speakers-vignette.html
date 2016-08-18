@@ -77,12 +77,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Find all e-mail addresses on CRAN which contain “rug.nl”</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(findRspeakers)
 <span class="kw">library</span>(pander)
+<span class="co"># more restrictive search </span>
+<span class="co">#possibleSpeakers = findRspeakers(domainPattern = &quot;\\.nl|\\.de|\\.com|\\.org|\\.edu&quot;, </span>
+<span class="co">#                                 lat = 53.21667, lon = 6.566667,  </span>
+<span class="co">#                                 data_file=&quot;/home/cbdavis/Desktop/svn/findRspeakers/geoLocatedDomains.csv&quot;)</span>
 
-possibleSpeakers =<span class="st"> </span><span class="kw">findRspeakers</span>(<span class="dt">lat =</span> <span class="fl">53.21667</span>, 
-                                 <span class="dt">lon =</span> <span class="fl">6.566667</span>, 
+possibleSpeakers =<span class="st"> </span><span class="kw">findRspeakers</span>(<span class="dt">lat =</span> <span class="fl">53.21667</span>, <span class="dt">lon =</span> <span class="fl">6.566667</span>, 
                                  <span class="dt">data_file=</span><span class="st">&quot;/home/cbdavis/Desktop/svn/findRspeakers/geoLocatedDomains.csv&quot;</span>)</code></pre></div>
-<pre><code>## [1] &quot;Using existing packages.rds file that is &lt; 24 hours old&quot;
-## [1] &quot;geolocating 1 domains in 0.630357980728149 minutes&quot;</code></pre>
+<pre><code>## [1] &quot;Using existing packages.rds file that is &lt; 24 hours old&quot;</code></pre>
 <pre><code>## Joining by: &quot;Package&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># split the results into several subtables</span>
 <span class="kw">pander</span>(possibleSpeakers[,<span class="kw">c</span>(<span class="st">&quot;Package&quot;</span>, <span class="st">&quot;Title&quot;</span>,  <span class="st">&quot;Author&quot;</span>, <span class="st">&quot;Maintainer&quot;</span>, <span class="st">&quot;Distance&quot;</span>)], <span class="dt">split.table=</span><span class="ot">Inf</span>)</code></pre></div>

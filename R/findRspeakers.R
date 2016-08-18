@@ -156,7 +156,16 @@ get_domains_per_package <- function(cran_db){
   allPackagesAndDomains = c()
   
   # these domains that don't give us much geo info
-  domainsToIgnore = c("bitbucket.org", "r-project.org", "github.com", "github.org", "sourceforge.net", "code.google.com")
+  domainsToIgnore = c("arxiv.org",
+                      "bitbucket.org", 
+                      "blogspot.com",
+                      "code.google.com", 
+                      "dx.doi.org", 
+                      "github", 
+                      "gmail.com", 
+                      "googlemail.com", 
+                      "r-project.org", 
+                      "sourceforge.net")
   
   domainsToIgnoreRegEx = paste0(gsub("\\.", "\\\\.", domainsToIgnore), collapse="|")
   
