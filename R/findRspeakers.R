@@ -172,8 +172,6 @@ get_domains_per_package <- function(cran_db){
     
     package = cran_db$Package[packageIndex]
     
-    print(package)
-    
     #### get package url date
     urls = strsplit(cran_db$URL[packageIndex], ",")[[1]]
     for (url in urls){
