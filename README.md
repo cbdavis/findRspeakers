@@ -15,6 +15,9 @@ Of course you should **use R to find people to give presentations about R**.  Th
 library(devtools)
 install_github("cbdavis/findRspeakers")
 ```
+## Troubleshooting
+
+This package relies on the [rgeolocate package](https://cran.r-project.org/web/packages/rgeolocate/vignettes/Introduction_to_rgeolocate.html) which sends requests to http://ip-api.com.  If you run into timeout issues, there's a chance that you may have been banned for too many requests.  If you can't reach http://ip-api.com, then this is probably the case.  You can unban your IP address by visiting http://ip-api.com/docs/unban while using a different computer/IP address than your current one.
 
 ## Example use
 Find all speakers with e-mail addresses in the Netherlands or Germany, within the default distance (100 km) of the coordinates given.  Information on the packages is returned as a data frame, below `pander` is used to format the dataframe into an html table.
