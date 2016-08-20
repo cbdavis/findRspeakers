@@ -108,7 +108,7 @@ get_packages_by_distance <- function(cran_db, data_file, lat, lon){
 }
 
 #' @import rgeolocate
-geolocate_domains <- function(cran_db, data_file = "geoLocatedDomains.csv"){
+geolocate_domains <- function(cran_db, data_file = "geoLocatedDomains.csv", batch_api_max_domains = 100){
   allPackagesAndDomains = get_domains_per_package(cran_db)
   
   allDomains = unique(allPackagesAndDomains$Domain)
@@ -122,14 +122,32 @@ geolocate_domains <- function(cran_db, data_file = "geoLocatedDomains.csv"){
   
   missingDataDomains = missingDataDomains[which(missingDataDomains != "")]
   
+  totalNumberDomains = length(missingDataDomains)
+  
+  geocodingCount = 0
   tmp_geoLocatedDomains = NULL
-  if (length(missingDataDomains) > 0){
-    # This takes about 20 minutes for ~8000 CRAN packages with 2000 domains
+  while (length(missingDataDomains) > 0){
+
+    print(paste("total geocoded:", geocodingCount, "of", totalNumberDomains))
+    geocodingCount = geocodingCount + min(c(batch_api_max_domains, totalNumberDomains))
+        
+    domainsToLookup = head(missingDataDomains, n=batch_api_max_domains)
+    missingDataDomains = tail(missingDataDomains, n=-batch_api_max_domains)
+    
     start.time <- Sys.time()
-    tmp_geoLocatedDomains = ip_api(missingDataDomains, delay=TRUE)
+    batch_results_geoLocatedDomains = ip_api(domainsToLookup, delay=TRUE)
     end.time <- Sys.time()
-    print(paste("geolocating", length(missingDataDomains), "domains in", end.time - start.time, "minutes"))
-    tmp_geoLocatedDomains$DomainQueried = missingDataDomains
+    print(paste("geolocated", length(domainsToLookup), "domains in", end.time - start.time, "seconds"))
+
+    sleepMore = 60 - (as.numeric(end.time) - as.numeric(start.time))
+    if (sleepMore > 0){
+      print(paste("sleeping", sleepMore, "seconds to stay within API limits"))
+      Sys.sleep(sleepMore)
+    }
+    
+    batch_results_geoLocatedDomains$DomainQueried = domainsToLookup
+    
+    tmp_geoLocatedDomains = rbind(tmp_geoLocatedDomains, batch_results_geoLocatedDomains)
   }
   
   if (file.exists(data_file)){
